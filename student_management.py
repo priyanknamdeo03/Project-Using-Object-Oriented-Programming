@@ -10,17 +10,17 @@ Fields :- ['roll', 'name', 'age', 'email', 'phone']
 """
  
 import csv
- 
+import json
 
 class Student():
     def __init__(self) -> None:
         self.student_data = []
         self.student_fields = ['roll', 'name', 'age', 'email', 'phone']
-        self.student_database = 'students.csv'
 
+    # ------------------------------------------------------------------
 
     def display_menu(self) -> None:
-        print("--------------------------------------")
+        print("\n--------------------------------------")
         print(" Welcome to Student Management System")
         print("---------------------------------------")
         print("1. Add New Student")
@@ -30,128 +30,118 @@ class Student():
         print("5. Delete Student")
         print("6. Quit")
     
+    # ------------------------------------------------------------------
     
     def add_student(self) -> None:
         print("-------------------------")
         print("Add Student Information")
         print("-------------------------")
-       
+        data = {}
+
         for field in self.student_fields:
             value = input("Enter " + field + ": ")
-            self.student_data.append(value)
-    
-        with open(self.student_database, "a", encoding="utf-8") as file:
-            writer = csv.writer(file)
-            writer.writerows([self.student_data])
-    
+            data[field] = value
+        self.student_data.append(data)
+
+        with open(f'students.json', "w", encoding="utf-8") as file:
+            json.dump(self.student_data, file, indent=4)
+
         print("Data saved successfully")
-        input("Press any key to continue")
+        input("Press any key to continue ")
         return
     
+    # ------------------------------------------------------------------
     
     def view_students(self) -> None:
-        print("--- Student Records ---")
-    
-        with open(self.student_database, "r", encoding="utf-8") as file:
-            reader = csv.reader(file)
+        print("\n--- Student Records ---")
 
-            for fields in self.student_fields:
-                print(fields, end='\t |')
-            print("\n-----------------------------------------------------------------")
+        with open(f'students.json', "r", encoding="utf-8") as file:
+            data = json.load(file)
+
+            for add_details in data:
+                print("Roll No : ", add_details['roll'])
+                print("Name : ", add_details['name'])
+                print("Age : ", add_details['age'])
+                print("Phone : ", add_details['phone'])
+                print("-------------------------------\n")
     
-            for row in reader:
-                for item in row:
-                    print(item, end="\t |")
-                print("\n")
+        input("Press any key to continue ")
     
-        input("Press any key to continue")
-    
+    # ------------------------------------------------------------------
     
     def search_student(self) -> None:
-        print("--- Search Student ---")
+        print("\n--- Search Student ---")
         roll = input("Enter roll no. to search: ")
 
-        with open(self.student_database, "r", encoding="utf-8") as file:
-            reader = csv.reader(file)
+        with open(f'students.json', "r", encoding="utf-8") as file:
+            data = json.load(file)
 
-            for row in reader:
-                if len(row) > 0:
-                    if roll == row[0]:
-                        print("----- Student Found -----")
-                        print("Roll: ", row[0])
-                        print("Name: ", row[1])
-                        print("Age: ", row[2])
-                        print("Email: ", row[3])
-                        print("Phone: ", row[4])
-                        break
+            for show_details in data:
+                if show_details['roll'] == roll:
+                    print("\n--- Student Records ---")
+                    print("\nRoll No : ", show_details['roll'])
+                    print("Name : ", show_details['name'])
+                    print("Age : ", show_details['age'])
+                    print("Phone : ", show_details['phone'])
+                    print("-------------------------------\n")
+                    break
             else:
-                print("Roll No. not found in our database")
-        input("Press any key to continue")
+                print("\nRoll No. not found in our database...........\n")
+
+        input("Press any key to continue ")
     
+    # ------------------------------------------------------------------
     
     def update_student(self) -> None:
-        updated_data = []
-        print("--- Update Student ---")
+        print("\n--- Update Student ---")
         roll = input("Enter roll no. to update: ")
-        index_student = None
-        
-        with open(self.student_database, "r", encoding="utf-8") as file:
-            reader = csv.reader(file)
-            counter = 0
+        file_updated = False
 
-            for row in reader:
-                if len(row) > 0:
-                    if roll == row[0]:
-                        index_student = counter
-                        print("Student Found: at index ",index_student)
-                        self.student_data = []
-                        for field in self.student_fields:
-                            value = input("Enter " + field + ": ")
-                            self.student_data.append(value)
-                        updated_data.append(self.student_data)
-                    else:
-                        updated_data.append(row)
-                    counter += 1
- 
- 
-        # Check if the record is found or not
-        if index_student is not None:
-            with open(self.student_database, "w", encoding="utf-8") as file:
-                writer = csv.writer(file)
-                writer.writerows(updated_data)
-        else:
-            print("Roll No. not found in our database")
+        with open(f'students.json', "r+", encoding="utf-8") as file:
+            data = json.load(file)
+
+            for row_detail in data:
+                if row_detail['roll'] == roll:
+                    
+                    for field in self.student_fields:
+                        value = input("Enter " + field + ": ")
+                        row_detail[field] = value
+                    print("\nUpdate Successful.................\n")
+                    # global file_updated
+                    file_updated = True
+                    break
+            else:
+                print("\nRoll No. not found in our database...........\n")
+        
+        if file_updated:
+            with open(f'students.json', "w", encoding="utf-8") as file:
+                json.dump(data, file, indent=4)
     
-        input("Press any key to continue")
- 
+        input("Press any key to continue ")
+    
+    # ------------------------------------------------------------------
 
     def delete_student(self) -> None:    
-        updated_data = []
-        print("--- Delete Student ---")
+        print("\n--- Delete Student ---")
         roll = input("Enter roll no. to delete: ")
-        student_found = False
+        file_deleted = False
 
-        with open(self.student_database, "r", encoding="utf-8") as file:
-            reader = csv.reader(file)
-            counter = 0
-
-            for row in reader:
-                if len(row) > 0:
-                    if roll != row[0]:
-                        updated_data.append(row)
-                        counter += 1
-                    else:
-                        student_found = True
-    
-        if student_found is True:
-            with open(self.student_database, "w", encoding="utf-8") as file:
-                writer = csv.writer(file)
-                writer.writerows(updated_data)
-            print("Roll no. ", roll, "deleted successfully")
-        else:
-            print("Roll No. not found in our database")
-    
-        input("Press any key to continue")
+        with open(f'students.json', "r+", encoding="utf-8") as file:
+            data = json.load(file)
+            
+            for row_detail in range(len(data)):
+                if data[row_detail]['roll'] == roll:
+                    del data[row_detail]
+                    print("\Record Deletion Successful.............\n")
+                    file_deleted = True
+                    break
+            else:
+                print("\nRoll No. not found in our database...........\n")
+        
+        with open(f'students.json', "w", encoding="utf-8") as file:
+            json.dump(data, file, indent=4)
+            
+        input("Press any key to continue ")
 
 # ----------------------------------------------------------------------
 
