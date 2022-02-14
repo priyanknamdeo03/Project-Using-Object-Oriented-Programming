@@ -33,7 +33,6 @@ class Bank(User):
         else:
             print("\nInsufficient Balance In Account To Withdraw : ", self.balance)
             
-    @classmethod
     def view_balance(self) -> None:
         self.show_user_details()
         print("Current Account Balance : ", self.balance)
